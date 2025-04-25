@@ -1,15 +1,49 @@
 "use client";
 import Image from "next/image";
 import YouTubePlayer from "./components/YouTubePlayer";
-import YouTubePlayer2 from "./components/YoutubePlayer2";
+import YouTubePlayerScroll from "./components/YouTubePlayerScroll";
 import { useUrlStore } from "./stores/UrlStore";
 import PullToRevealInput from "./components/PullToRevealInput";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { convertToRanges } from "./utils/convertToRanges";
+
 export default function Home() {
   const { url, setUrl } = useUrlStore(); // Access the URL state and setter function
-  // useEffect(() => {
-  //   setUrl("https://www.youtube.com/watch?v=g-ou5Yvm-1Q");
-  // }, []);
+  const [playerState, setPlayerState] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!url) return;
+
+    const fetchTimestamps = async () => {
+      try {
+        const res = await fetch("/api/getTimeStamps", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: url, threshold: 0.7 }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`API error: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        const segments = convertToRanges(
+          data.heat_map_info,
+          data.total_duration
+        );
+        console.log("segments are:", segments);
+        setPlayerState({ url: url, segments: segments });
+        setError(null);
+      } catch (err: any) {
+        setError(err.message || "Unknown error");
+        setPlayerState(null);
+      }
+    };
+    fetchTimestamps();
+  }, [url]);
 
   return (
     <div
@@ -32,24 +66,26 @@ bg-black [background-image:radial-gradient(at_top_center,hsl(354.67,92%,55%)_0,t
           startTime={30}
           endTime={35}
         /> */}
-        <YouTubePlayer2
+        <YouTubePlayerScroll
           // url={"https://www.youtube.com/watch?v=_unmlIPFNsA"}
-          // url={"https://www.youtube.com/watch?v=g-ou5Yvm-1Q"}
-          url={url}
-          segments={[
-            {
-              startTime: 10,
-              endTime: 20,
-            },
-            {
-              startTime: 30,
-              endTime: 40,
-            },
-            {
-              startTime: 50,
-              endTime: 60,
-            },
-          ]}
+          url={playerState?.url}
+          segments={playerState?.segments}
+          // url={url}
+          // segments={[
+          //   {
+          //     startTime: 10,
+          //     endTime: 20,
+          //   },
+          //   {
+          //     startTime: 30,
+          //     endTime: 40,
+          //   },
+          //   {
+          //     startTime: 50,
+          //     endTime: 60,
+          //   },
+          // ]}
+
           // endTime={25}
         />
       </div>
