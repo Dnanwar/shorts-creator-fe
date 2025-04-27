@@ -1,5 +1,6 @@
 // app/components/YouTubePlayerScroll.tsx
 "use client";
+import { Maximize2, Minimize2, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 declare global {
@@ -216,14 +217,20 @@ const YouTubePlayerScroll: React.FC<YouTubePlayerScrollProps> = ({
         // Next video.
         if (currentVideoIndex < segmentVideos.length - 1) {
           setCurrentVideoIndex(currentVideoIndex + 1);
+          setIsStretched(false);
+          setIsPlaying(true);
         }
       } else if (e.deltaY < 0) {
         // Previous video.
         if (currentVideoIndex > 0) {
           setCurrentVideoIndex(currentVideoIndex - 1);
+          setIsStretched(false);
+          setIsPlaying(true);
         }
       }
     };
+
+    const [inPhoneCnt, setInPhoneCnt] = useState(false);
 
     return (
       <div className="relative flex items-center justify-center">
@@ -231,36 +238,58 @@ const YouTubePlayerScroll: React.FC<YouTubePlayerScrollProps> = ({
         <div
           ref={containerRef}
           className="bg-black relative w-72 h-[600px] rounded-[45px] shadow-md border-8 border-zinc-900 "
+          onMouseEnter={() => setInPhoneCnt(true)}
+          onMouseLeave={() => setInPhoneCnt(false)}
         >
           {/* Decoration borders */}
           <div className="absolute -inset-[1px] border-[3px] border-zinc-700 border-opacity-40 rounded-[37px] pointer-events-none"></div>
           {/* Toggle stretch mode */}
           <button
             onClick={() => {
-              setIsStretched((prev) => !prev);
+              if (inPhoneCnt) setIsStretched((prev) => !prev);
             }}
-            className="absolute z-20 top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded"
+            className="absolute z-20 top-2 right-2 bg-white/0 hover:bg-white/10 text-white p-3 rounded-full transition-all cursor-pointer w-10 h-10 flex items-center justify-center backdrop-blur-md"
           >
-            {isStretched ? "Normal" : "Stretch"}
+            {inPhoneCnt ? isStretched ? <Minimize2 /> : <Maximize2 /> : <></>}
           </button>
+
           <button
-            onClick={togglePlayPause}
-            className="absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-700 text-white px-4 py-2 rounded"
+            onClick={() => {
+              if (inPhoneCnt) togglePlayPause();
+            }}
+            className="absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/0 text-white p-3 rounded-full hover:backdrop-blur-md transition-all cursor-pointer w-14 h-14 flex items-center justify-center"
           >
-            {isPlaying ? "Pause" : "Play"}
+            {inPhoneCnt ? isPlaying ? <Pause /> : <Play /> : <></>}
           </button>
           {/* YouTube player container */}
           <div className="relative w-full h-full bg-zinc-900/10 overflow-hidden rounded-[37px]">
+            {/* YouTube player */}
             <div id="player" style={{ width: "100%", height: "100%" }} />
-            <input
-              type="range"
-              min={startTime}
-              max={endTime}
-              step="0.5"
-              value={currentTime}
-              onChange={handleSeek}
-              className="absolute bottom-2 left-0 w-full z-20 appearance-none bg-transparent"
-            />
+
+            {/* Seek bar container */}
+            <div className="absolute bottom-4 left-4 right-4 z-20">
+              <div className="w-full backdrop-blur-md rounded-full h-1 relative">
+                {/* Red progress fill */}
+                <div
+                  className="bg-red-600 dark:bg-red-500 h-1 rounded-full transition-[width] duration-0"
+                  style={{
+                    width: `${
+                      ((currentTime - startTime) / (endTime - startTime)) * 100
+                    }%`,
+                  }}
+                />
+                {/* Invisible range input on top */}
+                <input
+                  type="range"
+                  min={startTime}
+                  max={endTime}
+                  step="0.5"
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="absolute top-0 left-0 w-full h-2.5 opacity-0 cursor-pointer"
+                />
+              </div>
+            </div>
           </div>
           {/* Wheel event overlay */}
           <div
