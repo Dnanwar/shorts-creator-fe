@@ -224,74 +224,92 @@ const YouTubePlayerScroll: React.FC<YouTubePlayerScrollProps> = ({
       }
     };
     return (
-      <div className="relative flex items-center justify-center">
-        <div
-          ref={containerRef}
-          className="bg-black relative w-72 h-[600px] rounded-[45px] shadow-md border-8 border-zinc-900"
-          onMouseEnter={() => setInPhoneCnt(true)}
-          onMouseLeave={() => setInPhoneCnt(false)}
-        >
-          <div className="absolute -inset-[1px] border-[3px] border-zinc-700 border-opacity-40 rounded-[37px] pointer-events-none" />
-          {/* Stretch Mode Button */}
-          {inPhoneCnt && (
-            <button
-              onClick={() => setIsStretched((prev) => !prev)}
-              className="absolute z-20 top-2 right-2 bg-white/0 hover:bg-white/10 text-white p-3 rounded-full transition-all cursor-pointer w-10 h-10 flex items-center justify-center backdrop-blur-md"
-            >
-              {isStretched ? <Minimize2 /> : <Maximize2 />}
-            </button>
-          )}
-          {/* Play/Pause Button */}
-          {inPhoneCnt && (
-            <button
-              onClick={togglePlayPause}
-              className="absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/0 text-white p-3 rounded-full hover:backdrop-blur-md transition-all cursor-pointer w-14 h-14 flex items-center justify-center"
-            >
-              {isPlaying ? <Pause /> : <Play />}
-            </button>
-          )}
-          {/* Player */}
-          <div className="relative w-full h-full bg-zinc-900/10 overflow-hidden rounded-[37px]">
-            <div id="player" style={{ width: "100%", height: "100%" }} />
-            {/* Progress Bar */}
-            <div className="absolute bottom-4 left-4 right-4 z-20">
-              <div className="w-full backdrop-blur-md rounded-full h-1 relative">
-                <div
-                  className="bg-red-600 dark:bg-red-500 h-1 rounded-full transition-[width] ease-in-out duration-500"
-                  style={{
-                    width: `${(
-                      ((currentTime - startTime) / (endTime - startTime)) *
-                      100
-                    ).toFixed(6)}%`,
-                  }}
-                />
-                <input
-                  type="range"
-                  min={startTime}
-                  max={endTime}
-                  step="0.5"
-                  value={currentTime}
-                  onChange={handleSeek}
-                  className="absolute top-0 left-0 w-full h-2.5 opacity-0 cursor-pointer"
-                />
+      <div className="flex flex-col items-center">
+        <div className="relative flex items-center justify-center">
+          <div
+            ref={containerRef}
+            className="bg-black relative w-72 h-[600px] rounded-[45px] shadow-md border-8 border-zinc-900"
+            onMouseEnter={() => setInPhoneCnt(true)}
+            onMouseLeave={() => setInPhoneCnt(false)}
+          >
+            <div className="absolute -inset-[1px] border-[3px] border-zinc-700 border-opacity-40 rounded-[37px] pointer-events-none" />
+            {/* Stretch Mode Button */}
+            {inPhoneCnt && (
+              <button
+                onClick={() => setIsStretched((prev) => !prev)}
+                className="absolute z-20 top-2 right-2 bg-white/0 hover:bg-white/10 text-white p-3 rounded-full transition-all cursor-pointer w-10 h-10 flex items-center justify-center backdrop-blur-md"
+              >
+                {isStretched ? <Minimize2 /> : <Maximize2 />}
+              </button>
+            )}
+            {/* Play/Pause Button */}
+            {inPhoneCnt && (
+              <button
+                onClick={togglePlayPause}
+                className="absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/0 text-white p-3 rounded-full hover:backdrop-blur-md transition-all cursor-pointer w-14 h-14 flex items-center justify-center"
+              >
+                {isPlaying ? <Pause /> : <Play />}
+              </button>
+            )}
+            {/* Player */}
+            <div className="relative w-full h-full bg-zinc-900/10 overflow-hidden rounded-[37px]">
+              <div id="player" style={{ width: "100%", height: "100%" }} />
+              {/* Progress Bar */}
+              <div className="absolute bottom-4 left-4 right-4 z-20">
+                <div className="w-full backdrop-blur-md rounded-full h-1 relative">
+                  <div
+                    className="bg-red-600 dark:bg-red-500 h-1 rounded-full transition-[width] ease-in-out duration-500"
+                    style={{
+                      width: `${(
+                        ((currentTime - startTime) / (endTime - startTime)) *
+                        100
+                      ).toFixed(6)}%`,
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min={startTime}
+                    max={endTime}
+                    step="0.5"
+                    value={currentTime}
+                    onChange={handleSeek}
+                    className="absolute top-0 left-0 w-full h-2.5 opacity-0 cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
+            {/* Swipe Overlay */}
+            <div
+              ref={scrollRef}
+              onWheel={onWheelHandler}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="absolute inset-0 z-10 overflow-hidden"
+            />
+            {/* Extra decoration elements */}
+            <div className="absolute left-[-12px] top-20 w-[6px] h-8 bg-zinc-900 rounded-l-md shadow-md" />
+            <div className="absolute left-[-12px] top-36 w-[6px] h-12 bg-zinc-900 rounded-l-md shadow-md" />
+            <div className="absolute left-[-12px] top-52 w-[6px] h-12 bg-zinc-900 rounded-l-md shadow-md" />
+            <div className="absolute right-[-12px] top-36 w-[6px] h-16 bg-zinc-900 rounded-r-md shadow-md" />
+
+            {/* 🆕 Dots indicator */}
           </div>
-          {/* Swipe Overlay */}
-          <div
-            ref={scrollRef}
-            onWheel={onWheelHandler}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            className="absolute inset-0 z-10 overflow-hidden"
-          />
-          {/* Extra decoration elements */}
-          <div className="absolute left-[-12px] top-20 w-[6px] h-8 bg-zinc-900 rounded-l-md shadow-md" />
-          <div className="absolute left-[-12px] top-36 w-[6px] h-12 bg-zinc-900 rounded-l-md shadow-md" />
-          <div className="absolute left-[-12px] top-52 w-[6px] h-12 bg-zinc-900 rounded-l-md shadow-md" />
-          <div className="absolute right-[-12px] top-36 w-[6px] h-16 bg-zinc-900 rounded-r-md shadow-md" />
         </div>
+        {inPhoneCnt && (
+          <div className="mt-6 inline-flex justify-center items-center gap-2 z-20 px-2.5 py-2 rounded-full bg-white/10 backdrop-blur-md">
+            {segmentVideos.map((_, index) => (
+              <div
+                key={index}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  index === currentVideoIndex
+                    ? "bg-white scale-125 opacity-100"
+                    : "bg-white/40 opacity-50"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   } else {

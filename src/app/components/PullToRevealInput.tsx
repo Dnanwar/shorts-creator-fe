@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import { ChevronRight } from "lucide-react";
 import { usePlayerStateStore } from "../stores/PlayerStateStore"; // ✅ import player store
@@ -9,6 +10,7 @@ export default function PullToRevealInput() {
   const [inputValue, setInputValue] = useState("");
   const [inputClicked, setInputClicked] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false); // 🆕 New state for focus
 
   const [url, setUrl] = useState("");
   const { isFetchingPlayerState, setPlayerState, setIsFetchingPlayerState } =
@@ -55,7 +57,10 @@ export default function PullToRevealInput() {
   }, [inputClicked, url]);
 
   return (
-    <div className="flex flex-col items-center justify-center transition-all duration-500 p-4 relative">
+    <div
+      className="flex flex-col items-center justify-center transition-all duration-500 p-4 relative"
+      onBlur={() => setIsFocused(false)}
+    >
       <div className="w-full max-w-md relative">
         <div className="flex items-center w-full">
           {/* 🔥 Conditionally render input or loading animation */}
@@ -75,8 +80,16 @@ export default function PullToRevealInput() {
                 placeholder="Enter URL"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setIsFocused(true)}
                 disabled={isFetchingPlayerState}
-                className="text-center text-xs w-full rounded-full backdrop-blur-md pl-3 outline-none focus:outline-none focus:ring-1 transition-all duration-300 focus:w-full focus:text-lg focus:py-3 focus:backdrop-blur-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`
+                  text-center text-xs w-full rounded-full pl-3 outline-none transition-all duration-300
+                  backdrop-blur-md
+                  ${isFocused ? "text-lg py-3 backdrop-blur-lg ring-1" : ""}
+                  ${
+                    isFetchingPlayerState ? "opacity-50 cursor-not-allowed" : ""
+                  }
+                `}
               />
 
               {/* 🔥 Only show Chevron if not fetching and input not empty */}
