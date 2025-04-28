@@ -7,31 +7,45 @@ export default function Home() {
   const { isFetchingPlayerState, playerState } = usePlayerStateStore();
   const [backgroundPositions, setBackgroundPositions] = useState<string[]>([]);
   useEffect(() => {
-    const layers = 6; // total number of wave layers
-    let animationFrameId: number;
+    const layers = 6;
+    let animationFrameId: number | undefined;
+
     if (isFetchingPlayerState) {
       let x = Array.from({ length: layers }, () => 0);
+
       const moveBackground = () => {
         const newPositions = x.map((xi, index) => {
           if (index % 2 === 0) {
-            xi += 0.5; // even index layers move right
+            xi += 0.5;
             if (xi > 150) xi = 0;
           } else {
-            xi -= 0.5; // odd index layers move left
+            xi -= 0.5;
             if (xi < -150) xi = 0;
           }
           x[index] = xi;
           return `${xi}px 0`;
         });
+
         setBackgroundPositions(newPositions);
         animationFrameId = requestAnimationFrame(moveBackground);
       };
+
       animationFrameId = requestAnimationFrame(moveBackground);
     } else {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      setBackgroundPositions(Array.from({ length: layers }, () => "0px 0px"));
     }
-    return () => cancelAnimationFrame(animationFrameId);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      setBackgroundPositions(Array.from({ length: layers }, () => "0px 0px"));
+    };
   }, [isFetchingPlayerState]);
+
   return (
     <div className="flex flex-col min-h-screen w-full bg-black relative overflow-hidden">
       {/* 🔥 Background Waves - multiple layers */}
@@ -41,7 +55,7 @@ export default function Home() {
             key={index}
             className="flex-1"
             style={{
-              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M0 50 Q25 0 50 50 T100 50' fill='transparent' stroke='%23ffffff10' stroke-width='1'/></svg>")`,
+              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M0 50 Q25 0 50 50 T100 50' fill='transparent' stroke='%23ffffff10' stroke-width='1.5'/></svg>")`,
               backgroundSize: "150px 150px",
               backgroundRepeat: "repeat",
               backgroundPosition: backgroundPositions[index] || "0px 0px",
